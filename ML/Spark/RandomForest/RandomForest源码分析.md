@@ -894,9 +894,8 @@
       }
 
 
-
-参考文献：
-[1] 机器学习.周志华
-[2] Spark随机森林算法原理、源码分析及案例实战 https://www.ibm.com/developerworks/cn/opensource/os-cn-spark-random-forest/
-[3] PLANET: Massively Parallel Learning of Tree Ensembles with MapReduce
-[4] https://github.com/endymecy/spark-ml-source-analysis
+参考文献:    
+[1] 机器学习.周志华   
+[2] Spark随机森林算法原理、源码分析及案例实战 https://www.ibm.com/developerworks/cn/opensource/os-cn-spark-random-forest/   
+[3] PLANET: Massively Parallel Learning of Tree Ensembles with MapReduce   
+[4] https://github.com/endymecy/spark-ml-source-analysis   
