@@ -609,9 +609,7 @@
         (nodesForGroup, treeToNodeToIndexInfo)
       }
     
-7 选中最优切分
-
-
+###### 7 选中最优切分
     // array of nodes to train indexed by node index in group
         val nodes = new Array[LearningNode](numNodes)
         nodesForGroup.foreach { case (treeIndex, nodesForTree) =>
@@ -645,6 +643,7 @@
                 nodeToFeatures(nodeIndex)
               }
               // DTStatsAggregator，其中引用了 ImpurityAggregator，给出计算不纯度 impurity 的逻辑
+              
               new DTStatsAggregator(metadata, featuresForNode)
             }
     
