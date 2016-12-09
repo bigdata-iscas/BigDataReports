@@ -1,0 +1,63 @@
+1.	访问hibernate.cfg.xml路径出错？
+【hibernate.cfg.xml放到了src/main/resources文件夹中】
+private static final String HIBERNATE_CFG_XML = "hibernate.cfg.xml";
+private static final String BASE = SessionHelper.class.getClassLoader()
+			.getResource(HIBERNATE_CFG_XML).getPath();
+2.	数据库连接错误？
+Unable to create requested service [org.hibernate.engine.jdbc.env.spi.JdbcEnvironment]
+Caused by: org.hibernate.exception.JDBCConnectionException: Error calling Driver#connect
+换成本地数据库，连接成功，预测是防火墙没关，无法访问外网数据库。
+3.	找不到Bean类？
+No qualifying bean of type [com.biggerbench.web.validation.UserValidate] found for dependency [com.biggerbench.web.validation.UserValidate]: expected at least 1 bean which qualifies as autowire candidate for this dependency. Dependency annotations: {}
+创建类的过程中，有些忘记加注解@Component。
+4.	Js与Controller连接时出错？
+nested exception is java.lang.IllegalArgumentException: No converter found for return value of type:
+SpringMVC 默认是没有对象转换成json的转换器的，需要手动添加jackson依赖
+5.	显示日志信息？
+需要配置log4j.properties文件。
+6.	写入数据库错误，hibernate映射不到实体类：
+org.hibernate.MappingException: Unknown entity:
+原因分析1：
+可能是因为使用注解的时候没有导入正确的包。要清楚，Entity包是javax.persistence.Entity;而不是hibernate包下的annotation
+原因分析2：
+使用注解时没有在*.cfg.xml下配置<mapping class=""/>,从而造成org.hibernate.MappingException: Unknown entity异常的原因
+原因分析3：
+没有在spring配置文件中添加hibernate的信息或是注解声明信息。
+
+解决方案：
+	很遗憾上述原因都没有生效，由于使用注解的方式，因此在初始化Hibernate的Configuration时，需要添加User.class。
+Configuration cfg=new Configuration(); 
+cfg.addAnnotatedClass(com.biggerbench.server.domain.entity.User.class);
+cfg.configure();
+
+
+梳理一下SSH（SpringMVC+Spring+Hibernate）框架所需要的配置文件：
+	SpringMVC：web.xml，相应的还会有XXX-servlet.xml是根据web.xml文件中的配置命名的。该文件用于配置欢迎页、servlet、filter等的。
+	Hibernate：Hibernate.cfg.xml用于配置连接数据库的信息，以及需要映射的实体类的信息。
+	Spring： applicationContext.xml，用于加载bean类。	
+
+使用Configuration的addAnnotatedClass添加bean类，如果直接写到代码里面，之后每次添加或是删除bean都要修改代码，所以此处使用XML将bean配置到文件中。
+
+XML解析的几种策略：
+	DOM方式，是W3C的标准API，许多语言都支持这种解析方式。这种方式是将整个XML文件作为树形结构整个的读入到内存中，允许应用程序对XML文件内容和结构进行修改。但是XML文件过大会加占用较多的内存空间，可能会造成内存溢出甚至程序崩溃。
+	SAX方式，通过类似于流解析的技术，通读整个XML文档树，通过事件处理器来响应程序员对于 XML 数据解析的需求。由于其不需要将整个 XML 文档读入内存当中，它对系统资源的节省是十分显而易见的。但是它的 API 接口十分复杂，其次由于其是属于类似流解析的文件扫描方式，因此不支持应用程序对于 XML 树内容结构等的修改。
+	JAXB方式，在上述两者的基础上衍生出来的工具类，为的是满足将 XML 转换为 JavaBean 的特殊需求。
+
+DOM解析：
+DocumentBuilderFactory builderFactory = DocumentBuilderFactory
+			.newInstance();
+DocumentBuilder builder= builderFactory.newDocumentBuilder();
+		Document document = builder.parse(new File(BASE_PATH));							
+		// get root element
+		Element rootElement = document.getDocumentElement();
+		
+// traverse child elements
+		NodeList nodes = rootElement.getElementsByTagName("model");
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Element node = (Element) nodes.item(i);
+			String clazz = node.getElementsByTagName("url").item(0)
+					.getFirstChild().getNodeValue();
+		}
+
+
+
