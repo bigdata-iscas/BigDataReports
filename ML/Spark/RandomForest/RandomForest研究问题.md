@@ -100,9 +100,24 @@ partiiton个数 | 分块大小 | total-executor-cores | memory per node | cores 
 
 
 ### 3 *算法结果对比*
-#### 同样算法、同样数据在Spark、Scikit-learn上的结果是否有不同？
-#### 不同的原因是什么？
+#### 同样算法、同样数据在Spark、Scikit-learn上的结果是否有不同？   
+1. 测试scikit-learn中线性RF是否线性（核数）   
+核数用n_jobs指定，配置4核。     
+测试数据：100维，10000条数据。    
+![image](http://note.youdao.com/yws/public/resource/1b9ef2c5d414f98f0c8bb01532772683/xmlnote/E3BFF08226D84B86B004C1F46A6777D9/3516)  
+![image](http://note.youdao.com/yws/public/resource/1b9ef2c5d414f98f0c8bb01532772683/xmlnote/6BA5BD0154B4407F97824225C7091CA8/3518)  
+运行时间与物理核数无关，与n = f(n_estimators(trees)/n_jobs)有关，当n_estimators(trees)整除n_jobs时，n = n_estimators(trees)/n_jobs，否则，n = n_estimators(trees)/n_jobs取整加1。  
+#### 不同的原因是什么？ 
 
+  参数 |spark | scikit-learn
+---|  --- | ---
+max_features|  1/3  |1/3
+max_depth | 10 | 10
+numTrees | 5 | 5  
+impurity | variance | mse
+maxBins | 32 | ?
+categoricalFeaturesInfo | Map | ?
+min_impurity_split | ? | 0.0 
 
 ## 应用可靠性研究问题
 ### 1 *异常数据生成*
@@ -183,11 +198,14 @@ app-20161208165232-0659
 ### 1 应用是否能够线性扩展？  
 
 生成稠密数据测试扩展性：
-特征数 | maxDepth | maxBins |  categoricalFeaturesInfo | impurity | numTrees
+
+  特征数 | maxDepth | maxBins |  categoricalFeaturesInfo | impurity | numTrees
 --- | --- | --- | --- | --- | ---
  1000 | 10 | 32 | empty | variance | 10
 
+
 系统配置：
+
 partiiton个数  | total-executor-cores | memory per node | cores per executor
 ---|--- | --- | --- | --- 
 8  | 8 | 3G | 2 
@@ -565,15 +583,21 @@ partiiton个数  | total-executor-cores | memory per node | cores per executor
 
 mailing list:  
 
-title | describe  
---- | ---  
-Random-Forest-hangs-without-trace-of-error | Random Forest hangs without trace of error, dataset: 600k rows, 200MB; subsampling: rate 0.05; job hangs at final stage  
-mllib random forest - executor heartbeat timed out | 20 trees, 5e6 LabeledPoints, 300 features: ok. 60 or 100  trees, 10e6 point: ExecutorLostFailure-no recent heartbeats-timeout of 120s.  
-Poor performance on distributed system | Poor performance on distributed system, jammed at collectAsMap at RandomForest.scala:525  
-Garbage-stats-in-Random-Forest-leaf-node |  impurity = -1 and gain = a giant negative number.   
-MLLib-Decision-Tree-not-getting-built-for-5-or-more-levels-maxDepth-5-and-the-one-built-for-3-levels | MLLib : Decision Tree not getting built for 5 or more levels(maxDepth=5) and the one built for 3 levels is performing poorly  
-java-io-IOException-No-space-left-on-device | java.io.IOException: No space left on device  
-abble.com/Scaling-problem-in-RandomForest | Scaling problem in RandomForest?  
+* | title | describe  
+--- | --- | ---  
+1 | Random-Forest-hangs-without-trace-of-error | Random Forest hangs without trace of error, dataset: 600k rows, 200MB; subsampling: rate 0.05; job hangs at final stage  
+2 | mllib random forest - executor heartbeat timed out | 20 trees, 5e6 LabeledPoints, 300 features: ok. 60 or 100  trees, 10e6 point: ExecutorLostFailure-no recent heartbeats-timeout of 120s.  
+3 | Poor performance on distributed system | Poor performance on distributed system, jammed at collectAsMap at RandomForest.scala:525  
+4 | Garbage-stats-in-Random-Forest-leaf-node |  impurity = -1 and gain = a giant negative number.   
+5 | MLLib-Decision-Tree-not-getting-built-for-5-or-more-levels-maxDepth-5-and-the-one-built-for-3-levels | MLLib : Decision Tree not getting built for 5 or more levels(maxDepth=5) and the one built for 3 levels is performing poorly  
+6 | java-io-IOException-No-space-left-on-device | java.io.IOException: No space left on device  
+7 | abble.com/Scaling-problem-in-RandomForest | Scaling problem in RandomForest?  
 	
 	
-
+1. Not Accpeted. 可靠性问题，在600k行，200MB数据下，collectAsMap的Job长时间未响应。
+2. Not Accpeted. Yarn相关问题，Executor丢失。 
+3. Not Accpeted. 可靠性问题，collectAsMap的Job长时间未响应。
+4. Not Accpeted. 得到gain为一个极大的负值。  
+5. 决策树正负样例比大，3层时性能差，结果差，5层时运行时间长。  
+6. I/O, Not Accpeted.
+7. OOM, Not Accpeted.
