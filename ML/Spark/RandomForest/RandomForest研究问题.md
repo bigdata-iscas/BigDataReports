@@ -601,3 +601,34 @@ mailing list:
 5. 决策树正负样例比大，3层时性能差，结果差，5层时运行时间长。  
 6. I/O, Not Accpeted.
 7. OOM, Not Accpeted.
+
+
+SPARK-14043: Remove restriction on maxDepth for decision trees  
+SPARK-18036: Decision trees/GBT/RF do not handle edge cases such as constant features or empty features.(bug)  
+SPARK-2152: the error of comput rightNodeAgg about Decision tree algorithm in Spark MLlib (resolved)  
+SPARK-2756: Decision Tree bugs, Indexing is inconsistent for aggregate calculations for unordered features, calculateGainForSplit, Off-by-1 when finding thresholds for splits for continuous features.(resolved)   
+SPARK-2417: Decision tree tests are failing(resolved).  
+SPARK-3086: Use 1-indexing for decision tree nodes(resolved).   
+1-indexing is good for binary trees. The root node gets index 1. And for any node with index i, its left child is (i << 1), right child is (i << 1) + 1, parent is (i >> 1), and its level is `java.lang.Integer.highestOneBit(idx)` (also 1-indexing for levels).  
+SPARK-14351: Optimize ImpurityAggregator for decision trees(In Progress)  
+RandomForest.binsToBestSplit currently takes a large amount of time. Based on some quick profiling, I believe a big chunk of this is spent in ImpurityAggregator.getCalculator (which seems to make unnecessary Array copies) and RandomForest.calculateImpurityStats.  
+SPARK-3717: DecisionTree, RandomForest: Partition by feature(open)  
+SPARK-13787: Feature importances for decision trees in Python  
+SPARK-1544: Add support for deep decision trees(closed).  
+The current tree implementation stores an Array[Double] of size O(#features \ #splits 	* 2^maxDepth)* in memory for aggregating histograms over partitions. The current implementation might not scale to very deep trees since the memory requirement grows exponentially with tree depth.  
+This task enables construction of arbitrary deep trees.  
+SPARK-3443: Update the default values of some decision tree parameters(resolved, 是否有更加合适的？).  
+1. maxMemoryInMB: 128 -> 256  
+2. maxBins: 100 -> 32  
+3. maxDepth: 4 -> 5 (in some example code)  
+SPARK-3366: Compute best splits distributively in decision tree(resolved)  
+SPARK-10524: Decision tree binary classification with ordered categorical features: incorrect centroid.  
+SPARK-10064: Decision tree continuous feature binning is slow in large feature spaces(resolved).  
+SPARK-4240: Refine Tree Predictions in Gradient Boosting to Improve Prediction Accuracy.  
+SPARK-7129: Add generic boosting algorithm to spark.ml  
+SPARK-3159: Check for reducible DecisionTree  
+SPARK-3727: Trees and ensembles: More prediction functionality  
+SPARK-3155: Support DecisionTree pruning剪枝  
+SPARK-1546: Add AdaBoost algorithm to Spark MLlib  
+SPARK-9478: Add sample weights to Random Forest  
+SPARK-15119: DecisionTreeParams.minInfoGain does not have a validator  
