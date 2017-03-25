@@ -26,7 +26,7 @@ val sampledInput = if (continuousFeatures.nonEmpty) {
       input.sample(withReplacement = false, fraction, new XORShiftRandom(seed).nextInt())
 ```
 
-- convert to bagged RDD时，每个instance在每个subsampled dataset（每棵tree）中随机取的次数由泊松采样确定，无放回采样。不采样的情况：numTrees=1且strategy.subsamplingRate=1.0。
+- convert to bagged RDD时，每个instance在每个subsampled dataset（每棵tree）中随机取的次数由泊松采样确定，有放回采样。不采样的情况：numTrees=1且strategy.subsamplingRate=1.0。
 
 ```
 val poisson = new PoissonDistribution(subsample)
